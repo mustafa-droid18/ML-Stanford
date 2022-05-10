@@ -62,10 +62,43 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+X = [ones(m,1), X];  % Adding 1 as first column in X
+a1 = X; % 5000 x 401
+z2 = a1 * Theta1';  % m x hidden_layer_size == 5000 x 25
+a2 = sigmoid(z2); % m x hidden_layer_size == 5000 x 25
+a2 = [ones(size(a2,1),1), a2]; % Adding 1 as first column in z = (Adding bias unit) % m x (hidden_layer_size + 1) == 5000 x 26
+z3 = a2 * Theta2';  % m x num_labels == 5000 x 10
+h = sigmoid(z3); % m x num_labels == 5000 x 10
+
+%y_vec = zeros(m,num_labels);
+%for i = 1:m
+%y_vec(i,y(i)) = 1;
+%end
+
+y_vec = (1:num_labels)==y; 
+
+J = sum(sum((-y_vec.*log(h))-((1-y_vec).*log(1-h))))/m + (lambda/(2*m)) * (sum(sum(Theta1(:,2:end).^2)) + sum(sum(Theta2(:,2:end).^2)));
 
 
+%Back Propagation
 
+for t =1:m
+    a1= X(t,:)'; % 401 * 1
+    z2 = Theta1*a1; % 25 *1
+    a2 = sigmoid(z2); % 25*1
+    a2 = [1; a2]; %26*1
+    z3 = Theta2*a2; % 10*1
+    a3 = sigmoid(z3); % 10*1
+    y_vec = (1:num_labels)'==y(t); 
+    delta3 = a3-y_vec;
+    delta2 = (Theta2' * delta3).*[1;sigmoidGradient(z2)];
+    delta2=delta2(2:end);
+    Theta1_grad= Theta1_grad+ (delta2*a1');
+    Theta2_grad= Theta2_grad+ delta3*a2';
+end
 
+Theta1_grad= Theta1_grad/m +(lambda/m)*[zeros(size(Theta1,1),1) Theta1(:,2:end)];
+Theta2_grad= Theta2_grad/m +(lambda/m)*[zeros(size(Theta2,1),1) Theta2(:,2:end)];
 
 
 
